@@ -100,8 +100,7 @@ export default class MySqlDB implements IDatabase {
   };
 
   insertOrder = async (order: Order) => {
-    ///TODO: Implement this
-    return this.connection.query(
+    await this.connection.query(
       `INSERT INTO orders (id, userId, products, totalAmount) VALUES (?, ?, ?, ?);`,
       [
         order.id,
@@ -114,7 +113,7 @@ export default class MySqlDB implements IDatabase {
 
   updateUser = async (patch: UserPatchRequest) => {
     ///TODO: Implement this
-    return this.connection.query(
+    await this.connection.query(
       `UPDATE users SET email = ?, password = ? WHERE id = ?;`,
       [patch.email, patch.password, patch.id]
     );
