@@ -101,14 +101,16 @@ export default class MySqlDB implements IDatabase {
 
   insertOrder = async (order: Order) => {
     await this.connection.query(
-      `INSERT INTO orders (id, userId, products, totalAmount) VALUES (?, ?, ?, ?);`,
-      [
-        order.id,
-        order.userId,
-        JSON.stringify(order.products),
-        order.totalAmount,
-      ]
+      `INSERT INTO orders (id, userId, totalAmount) VALUES (?, ?, ?, ?);`,
+      [order.id, order.userId, order.totalAmount]
     );
+
+    for (const item of order.products) {
+      await this.connection.query(
+        `INSERT INTO order_items (orderId, productId, quantity) VALUES (?, ?, ?);`,
+        [order.id, item.productId, item.quantity]
+      );
+    }
   };
 
   updateUser = async (patch: UserPatchRequest) => {

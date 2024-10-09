@@ -21,6 +21,7 @@
         "dotenv": "^16.1.4",
         "express": "^4.18.2",
         "google-protobuf": "^3.21.2",
+        "lab-1-skeleton": "file:",
         "long": "^5.2.3",
         "morgan": "^1.10.0",
         "mysql2": "^3.3.5",
