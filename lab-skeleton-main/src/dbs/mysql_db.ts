@@ -79,7 +79,7 @@ export default class MySqlDB implements IDatabase {
       }
     }
 
-    return orders;
+    return orders.filter(order => order.products.length > 0);
   };
 
   async queryOrdersByUser(id: string) {
