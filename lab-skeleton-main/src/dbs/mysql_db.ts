@@ -1,6 +1,7 @@
 import { Product } from "../compiled_proto/app";
 import { IDatabase } from "../interfaces";
-import { Category, Order, User, UserPatchRequest } from "../types";
+import { Category, Order, OrderItem, User, UserPatchRequest } from "../types";
+import { randomUUID } from "crypto";
 import mysql from "mysql2/promise";
 
 export default class MySqlDB implements IDatabase {
@@ -31,7 +32,6 @@ export default class MySqlDB implements IDatabase {
 
   async queryRandomProduct() {
     ///TODO: Implement this
-    // return this.connection.query('') as unknown as Product;
     return (
       await this.connection.query(
         "SELECT * FROM products ORDER BY RAND() LIMIT 1;"
@@ -63,8 +63,23 @@ export default class MySqlDB implements IDatabase {
 
   queryAllOrders = async () => {
     ///TODO: Implement this
-    // return (await this.connection.query(""))[0] as Order[];
-    return (await this.connection.query("SELECT * FROM orders;"))[0] as Order[];
+    const orders: Order[] = (await this.connection.query("SELECT * from orders"))[0] as Order[];
+    const items: OrderItem[] = (await this.connection.query("SELECT * FROM order_items"))[0] as OrderItem[];
+
+    const map = new Map<string, Order>();
+    for (const order of orders) {
+      map.set(order.id, order);
+      order.products = [];
+    }
+
+    for (const item of items) {
+      const order = map.get(item.orderId);
+      if (order) {
+        order.products.push({productId: item.productId, quantity: item.quantity});
+      }
+    }
+
+    return orders;
   };
 
   async queryOrdersByUser(id: string) {
@@ -100,17 +115,17 @@ export default class MySqlDB implements IDatabase {
   };
 
   insertOrder = async (order: Order) => {
-    for (const item of order.products) {
-      await this.connection.query(
-        `INSERT INTO order_items (orderId, productId, quantity) VALUES (?, ?, ?);`,
-        [order.id, item.productId, item.quantity]
-      );
-    }
-
     await this.connection.query(
-      `INSERT INTO orders (id, userId, totalAmount) VALUES (?, ?, ?, ?);`,
+      `INSERT INTO orders (id, userId, totalAmount) VALUES (?, ?, ?);`,
       [order.id, order.userId, order.totalAmount]
     );
+
+    for (const item of order.products) {
+      await this.connection.query(
+        `INSERT INTO order_items (id, orderId, productId, quantity) VALUES (?, ?, ?, ?);`,
+        [randomUUID(), order.id, item.productId, item.quantity]
+      );
+    }
   };
 
   updateUser = async (patch: UserPatchRequest) => {

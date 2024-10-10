@@ -22,6 +22,13 @@ export type Order = {
     totalAmount: number;
 };
 
+export type OrderItem = {
+    id: number;
+    orderId: string;
+    productId: string;
+    quantity: number;
+}
+
 export type OrderRequest = {
     id: string;
 }
