@@ -61,26 +61,48 @@ export default class MySqlDB implements IDatabase {
     )[0] as Category[];
   };
 
+  // queryAllOrders = async () => {
+  //   ///TODO: Implement this
+  //   const orders: Order[] = (await this.connection.query("SELECT * from orders"))[0] as Order[];
+  //   const items: OrderItem[] = (await this.connection.query("SELECT * FROM order_items"))[0] as OrderItem[];
+
+  //   const map = new Map<string, Order>();
+  //   for (const order of orders) {
+  //     map.set(order.id, order);
+  //     order.products = [];
+  //   }
+
+  //   for (const item of items) {
+  //     const order = map.get(item.orderId);
+  //     if (order) {
+  //       order.products.push({productId: item.productId, quantity: item.quantity});
+  //     }
+  //   }
+
+  //   return orders;
+  // };
+
   queryAllOrders = async () => {
-    ///TODO: Implement this
     const orders: Order[] = (await this.connection.query("SELECT * from orders"))[0] as Order[];
     const items: OrderItem[] = (await this.connection.query("SELECT * FROM order_items"))[0] as OrderItem[];
 
     const map = new Map<string, Order>();
     for (const order of orders) {
-      map.set(order.id, order);
-      order.products = [];
+        if (!map.has(order.id)) {
+            map.set(order.id, { ...order, products: [] }); // Ensure products array is initialized
+        }
     }
 
     for (const item of items) {
-      const order = map.get(item.orderId);
-      if (order) {
-        order.products.push({productId: item.productId, quantity: item.quantity});
-      }
+        const order = map.get(item.orderId);
+        if (order) {
+            order.products.push({ productId: item.productId, quantity: item.quantity });
+        }
     }
 
-    return orders;
-  };
+    return Array.from(map.values()); // Return unique orders
+};
+
 
   async queryOrdersByUser(id: string) {
     ///TODO: Implement this
