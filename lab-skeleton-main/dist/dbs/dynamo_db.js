@@ -77,6 +77,10 @@ class DynamoDB {
         return __awaiter(this, void 0, void 0, function* () {
             const command = new lib_dynamodb_1.ScanCommand({
                 TableName: "Orders",
+                FilterExpression: 'size(products) > :zero',
+                ExpressionAttributeValues: {
+                    ':zero': 0,
+                },
             });
             const response = yield this.docClient.send(command);
             return response.Items;
@@ -91,6 +95,7 @@ class DynamoDB {
                     ":userId": userId,
                 },
             });
+            console.log("eeeeeee");
             const response = yield this.docClient.send(command);
             return response.Items;
         });
@@ -150,9 +155,8 @@ class DynamoDB {
                 Key: {
                     id: patch.id,
                 },
-                UpdateExpression: "SET email = :e, password = :p",
+                UpdateExpression: "SET password = :p",
                 ExpressionAttributeValues: {
-                    ":e": patch.email,
                     ":p": patch.password,
                 },
             });

@@ -76,10 +76,14 @@ export default class DynamoDB implements IDatabase {
   }
 
   async queryAllOrders() {
-    const command = new ScanCommand({
-      TableName: "Orders",
-    });
 
+    const command = new ScanCommand({
+    TableName: "Orders",
+    FilterExpression: 'size(products) > :zero',
+    ExpressionAttributeValues: {
+      ':zero': 0,
+    },
+  });
     const response = await this.docClient.send(command);
     return response.Items as Order[];
   }
@@ -92,7 +96,7 @@ export default class DynamoDB implements IDatabase {
         ":userId": userId,
       },
     });
-
+	console.log("eeeeeee")
     const response = await this.docClient.send(command);
     return response.Items as Order[];
   }
@@ -140,7 +144,6 @@ export default class DynamoDB implements IDatabase {
       TableName: "Orders",
       Item: order,
     });
-
     await this.docClient.send(command);
   }
 
@@ -151,9 +154,8 @@ export default class DynamoDB implements IDatabase {
       Key: {
         id: patch.id,
       },
-      UpdateExpression: "SET email = :e, password = :p",
+      UpdateExpression: "SET password = :p",
       ExpressionAttributeValues: {
-        ":e": patch.email,
         ":p": patch.password,
       },
     });
