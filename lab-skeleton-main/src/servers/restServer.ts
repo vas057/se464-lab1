@@ -6,6 +6,19 @@ import bodyParser from "body-parser";
 import { AllProductsRequest, Order, OrderRequest, ProductRequest, UserPatchRequest, UserRequest } from "../types";
 import logger from "../logger";
 
+let queryProductByIdRequests = 0;
+let queryRandomProductRequests = 0;
+let queryAllProductsRequests = 0;
+let queryAllCategoriesRequests = 0;
+let queryAllOrdersRequests = 0;
+let queryOrdersByUserRequests = 0;
+let queryOrderByIdRequests = 0;
+let queryUserByIdRequests = 0;
+let queryAllUsersRequests = 0;
+let insertOrderRequests = 0;
+let updateUserRequests = 0;
+let deleteOrderRequests = 0;
+
 export default class RestServer implements IServer {
 
   db: IDatabase;
@@ -30,27 +43,61 @@ export default class RestServer implements IServer {
         res.status(400).send("No product id provided");
         return;
       }
+      logger.info({
+        message: "queryProductById",
+        details: {
+          productId: productId,
+          requests: ++queryProductByIdRequests,
+        },
+      });
       const product = await this.db.queryProductById(productId);
       res.send(product);
     }); // Gets a product by product id
 
     this.server.get("/randomproduct", async (req: express.Request, res: express.Response) => {
+      logger.info({
+        message: "queryRandomProduct",
+        details: {
+          requests: ++queryRandomProductRequests,
+        },
+      });
       const randProd = await this.db.queryRandomProduct();
       res.send(randProd);
     }); // I'm feeling lucky type
 
     this.server.get("/products", async (req: express.Request, res: express.Response) => {
       const { categoryId } = (req.query as AllProductsRequest);
+      logger.info({
+        message: "queryAllProducts",
+        details: {
+          categoryId: categoryId
+            ? categoryId
+            : "",
+          requests: ++queryAllProductsRequests
+        }
+      })
       const products = await this.db.queryAllProducts(categoryId);
       res.send(products);
     }); // Gets all products, or by category
 
     this.server.get("/categories", async (req: express.Request, res: express.Response) => {
+      logger.info({
+        message: "queryAllCategories",
+        details: {
+          requests: ++queryAllCategoriesRequests,
+        },
+      });
       const categories = await this.db.queryAllCategories();
       res.send(categories);
     }); // Gets all categories
 
     this.server.get("/allorders", async (req: express.Request, res: express.Response) => {
+      logger.info({
+        message: "queryAllOrders",
+        details: {
+          requests: ++queryAllOrdersRequests,
+        },
+      });
       const orders = await this.db.queryAllOrders();
       res.send(orders);
     }); // Gets all orders
@@ -61,6 +108,13 @@ export default class RestServer implements IServer {
         res.status(400).send("No user id provided");
         return;
       }
+      logger.info({
+        message: "queryOrdersByUser",
+        details: {
+          id: id,
+          requests: ++queryOrdersByUserRequests,
+        }
+      })
       const orders = await this.db.queryOrdersByUser(id);
       res.send(orders);
     }); // Gets all of a single user's orders
@@ -71,6 +125,13 @@ export default class RestServer implements IServer {
         res.status(400).send("No order id provided");
         return;
       }
+      logger.info({
+        message: "queryOrderById",
+        details: {
+          id: id,
+          requests: ++queryOrderByIdRequests,
+        },
+      });
       const order = await this.db.queryOrderById(id);
       res.send(order);
     }); // Gets more details on a specific order by id
@@ -81,17 +142,37 @@ export default class RestServer implements IServer {
         res.status(400).send("No user id provided");
         return;
       }
+      logger.info({
+        message: "queryUserById",
+        details: {
+          id: id,
+          requests: ++queryUserByIdRequests,
+        },
+      });
       const user = await this.db.queryUserById(id);
       res.send(user);
     }); // Gets details on a specific user by username
 
     this.server.get("/users", async (_req: express.Request, res: express.Response) => {
+      logger.info({
+        message: "queryAllUsers",
+        details: {
+          requests: ++queryAllUsersRequests,
+        },
+      });
       const users = await this.db.queryAllUsers();
       res.send(users);
     });// Gets all users
 
     this.server.post("/orders", async (req: express.Request, res: express.Response) => {
       const order = (req.body as Order);
+      logger.info({
+        message: "insertOrder",
+        details: {
+          order: order,
+          requests: ++insertOrderRequests,
+        },
+      });
       const response = await this.db.insertOrder(order);
       res.send(response);
     }); // Creates a new order
@@ -103,6 +184,13 @@ export default class RestServer implements IServer {
         ...updates,
         id: userId,
       }
+      logger.info({
+        message: "updateUser",
+        details: {
+          patch: patch,
+          requests: ++updateUserRequests,
+        },
+      });
       const response = await this.db.updateUser(patch);
       res.send(response);
     }); // Updates a user's email or password
@@ -114,6 +202,13 @@ export default class RestServer implements IServer {
         return;
       }
       try {
+        logger.info({
+          message: "deleteOrder",
+          details: {
+            id: id,
+            requests: ++deleteOrderRequests,
+          },
+        });
         await this.db.deleteOrder(id);
         res.status(204).send(); // No Content
       } catch (error) {

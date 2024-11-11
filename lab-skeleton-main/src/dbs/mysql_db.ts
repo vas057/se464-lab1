@@ -5,6 +5,19 @@ import { randomUUID } from "crypto";
 import mysql from "mysql2/promise";
 import logger from "../logger";
 
+let queryProductByIdRequests = 0;
+let queryRandomProductRequests = 0;
+let queryAllProductsRequests = 0;
+let queryAllCategoriesRequests = 0;
+let queryAllOrdersRequests = 0;
+let queryOrdersByUserRequests = 0;
+let queryOrderByIdRequests = 0;
+let queryUserByIdRequests = 0;
+let queryAllUsersRequests = 0;
+let insertOrderRequests = 0;
+let updateUserRequests = 0;
+let deleteOrderRequests = 0;
+
 export default class MySqlDB implements IDatabase {
   connection: mysql.Connection;
 
@@ -24,6 +37,13 @@ export default class MySqlDB implements IDatabase {
   }
 
   async queryProductById(productId) {
+    logger.info({
+      message: "queryProductById",
+      details: {
+        productId: productId,
+        requests: ++queryProductByIdRequests,
+      },
+    })
     return (
       await this.connection.query(`SELECT *
                                 FROM products
@@ -33,6 +53,12 @@ export default class MySqlDB implements IDatabase {
 
   async queryRandomProduct() {
     ///TODO: Implement this
+    logger.info({
+      message: "queryRandomProduct",
+      details: {
+        requests: ++queryRandomProductRequests,
+      },
+    })
     return (
       await this.connection.query(
         "SELECT * FROM products ORDER BY RAND() LIMIT 1;"
@@ -43,6 +69,13 @@ export default class MySqlDB implements IDatabase {
   queryAllProducts = async (category?: string) => {
     ///TODO: Implement this
     // return this.connection.query("") as unknown as Product[];
+    logger.info({
+      message: "queryAllProducts",
+      details: {
+        category: category,
+        requests: ++queryAllProductsRequests,
+      },
+    })
     if (category) {
       return (
         await this.connection.query(
@@ -57,6 +90,12 @@ export default class MySqlDB implements IDatabase {
   };
 
   queryAllCategories = async () => {
+    logger.info({
+      message: "queryAllCategories",
+      details: {
+        requests: ++queryAllCategoriesRequests,
+      },
+    })
     return (
       await this.connection.query("SELECT * FROM categories;")
     )[0] as Category[];
@@ -64,6 +103,12 @@ export default class MySqlDB implements IDatabase {
 
   queryAllOrders = async () => {
     ///TODO: Implement this
+    logger.info({
+      message: "queryAllOrders",
+      details: {
+        requests: ++queryAllOrdersRequests,
+      },
+    })
     const orders: Order[] = (await this.connection.query("SELECT * from orders"))[0] as Order[];
     const items: OrderItem[] = (await this.connection.query("SELECT * FROM order_items"))[0] as OrderItem[];
 
@@ -86,6 +131,13 @@ export default class MySqlDB implements IDatabase {
   async queryOrdersByUser(id: string) {
     ///TODO: Implement this
     // return (await this.connection.query(""))[0] as Order[]; // Not a perfect analog for NoSQL, since SQL cannot return a list.
+    logger.info({
+      message: "queryOrdersByUser",
+      details: {
+        id: id,
+        requests: ++queryOrdersByUserRequests,
+      },
+    })
     return (
       await this.connection.query(`SELECT *
                                 FROM orders
@@ -94,6 +146,13 @@ export default class MySqlDB implements IDatabase {
   }
 
   queryOrderById = async (id: string) => {
+    logger.info({
+      message: "queryOrderById",
+      details: {
+        id: id,
+        requests: ++queryOrderByIdRequests,
+      },
+    })
     return (
       await this.connection.query(`SELECT *
                              FROM orders
@@ -102,6 +161,13 @@ export default class MySqlDB implements IDatabase {
   };
 
   queryUserById = async (id: string) => {
+    logger.info({
+      message: "queryUserById",
+      details: {
+        id: id,
+        requests: ++queryUserByIdRequests,
+      },
+    })
     return (
       await this.connection.query(`SELECT id, email, name
                              FROM users
@@ -110,12 +176,25 @@ export default class MySqlDB implements IDatabase {
   };
 
   queryAllUsers = async () => {
+    logger.info({
+      message: "queryAllUsers",
+      details: {
+        requests: ++queryAllUsersRequests,
+      },
+    })
     return (
       await this.connection.query("SELECT id, name, email FROM users")
     )[0] as User[];
   };
 
   insertOrder = async (order: Order) => {
+    logger.info({
+      message: "insertOrder",
+      details: {
+        order: order,
+        requests: ++insertOrderRequests,
+      },
+    })
     await this.connection.query(
       `INSERT INTO orders (id, userId, totalAmount) VALUES (?, ?, ?);`,
       [order.id, order.userId, order.totalAmount]
@@ -131,6 +210,13 @@ export default class MySqlDB implements IDatabase {
 
   updateUser = async (patch: UserPatchRequest) => {
     ///TODO: Implement this
+    logger.info({
+      message: "updateUser",
+      details: {
+        patch: patch,
+        requests: ++updateUserRequests,
+      },
+    })
     await this.connection.query(
       `UPDATE users SET email = ?, password = ? WHERE id = ?;`,
       [patch.email, patch.password, patch.id]
@@ -140,6 +226,13 @@ export default class MySqlDB implements IDatabase {
   // This is to delete the inserted order to avoid database data being contaminated also to make the data in database consistent with that in the json files so the comparison will return true.
   // Feel free to modify this based on your inserOrder implementation
   deleteOrder = async (id: string) => {
+    logger.info({
+      message: "deleteOrder",
+      details: {
+        id: id,
+        requests: ++deleteOrderRequests,
+      },
+    })
     await this.connection.query(`DELETE FROM order_items WHERE orderId = ?`, [
       id,
     ]);

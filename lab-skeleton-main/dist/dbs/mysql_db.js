@@ -14,18 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const crypto_1 = require("crypto");
 const promise_1 = __importDefault(require("mysql2/promise"));
-let queryAllProductsRequests = 0;
-let queryAllCategoriesRequests = 0;
-let queryAllOrdersRequests = 0;
-let queryOrderByIdRequests = 0;
-let queryUserByIdRequests = 0;
-let queryAllUsersRequests = 0;
-let insertOrderRequests = 0;
-let updateUserRequests = 0;
-let deleteOrderRequests = 0;
-let queryProductByIdRequests = 0;
-let queryRandomProductRequests = 0;
-let queryOrdersByUserRequests = 0;
+const logger_1 = __importDefault(require("../logger"));
 class MySqlDB {
     init() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -36,20 +25,13 @@ class MySqlDB {
                 port: parseInt(process.env.RDS_PORT), // Convert port to a number
                 database: process.env.RDS_DATABASE,
             });
-            logger.info("MySQL connected!");
+            logger_1.default.info("MySQL connected!");
         });
     }
     constructor() {
         this.queryAllProducts = (category) => __awaiter(this, void 0, void 0, function* () {
             ///TODO: Implement this
             // return this.connection.query("") as unknown as Product[];
-            logger.info({
-                message: 'Querying all products',
-                details: {
-                    category: category || 'all',
-                    requestCount: ++queryAllProductsRequests
-                }
-            })
             if (category) {
                 return (yield this.connection.query(`SELECT * FROM products WHERE category = "${category}";`))[0];
             }
@@ -58,22 +40,10 @@ class MySqlDB {
             }
         });
         this.queryAllCategories = () => __awaiter(this, void 0, void 0, function* () {
-            logger.info({
-                message: 'Querying all categories',
-                details: {
-                    requestCount: ++queryAllCategoriesRequests
-                }
-            })
             return (yield this.connection.query("SELECT * FROM categories;"))[0];
         });
         this.queryAllOrders = () => __awaiter(this, void 0, void 0, function* () {
             ///TODO: Implement this
-            logger.info({
-                message: 'Querying all orders',
-                details: {
-                    requestCount: ++queryAllOrdersRequests
-                }
-            })
             const orders = (yield this.connection.query("SELECT * from orders"))[0];
             const items = (yield this.connection.query("SELECT * FROM order_items"))[0];
             const map = new Map();
@@ -90,46 +60,19 @@ class MySqlDB {
             return orders.filter(order => order.products.length > 0);
         });
         this.queryOrderById = (id) => __awaiter(this, void 0, void 0, function* () {
-            logger.info({
-                message: 'Querying order by id',
-                details: {
-                    id: id,
-                    requestCount: ++queryOrderByIdRequests
-                }
-            })
             return (yield this.connection.query(`SELECT *
                              FROM orders
                              WHERE id = "${id}"`))[0][0];
         });
         this.queryUserById = (id) => __awaiter(this, void 0, void 0, function* () {
-            logger.info({
-                message: 'Querying user by id',
-                details: {
-                    id: id,
-                    requestCount: ++queryUserByIdRequests
-                }
-            })
             return (yield this.connection.query(`SELECT id, email, name
                              FROM users
                              WHERE id = "${id}";`))[0][0];
         });
         this.queryAllUsers = () => __awaiter(this, void 0, void 0, function* () {
-            logger.info({
-                message: 'Querying all users',
-                details: {
-                    requestCount: ++queryAllUsersRequests
-                }
-            })
             return (yield this.connection.query("SELECT id, name, email FROM users"))[0];
         });
         this.insertOrder = (order) => __awaiter(this, void 0, void 0, function* () {
-            logger.info({
-                message: 'Inserting order',
-                details: {
-                    order: order,
-                    requestCount: ++insertOrderRequests
-                }
-            })
             yield this.connection.query(`INSERT INTO orders (id, userId, totalAmount) VALUES (?, ?, ?);`, [order.id, order.userId, order.totalAmount]);
             for (const item of order.products) {
                 yield this.connection.query(`INSERT INTO order_items (id, orderId, productId, quantity) VALUES (?, ?, ?, ?);`, [(0, crypto_1.randomUUID)(), order.id, item.productId, item.quantity]);
@@ -137,25 +80,11 @@ class MySqlDB {
         });
         this.updateUser = (patch) => __awaiter(this, void 0, void 0, function* () {
             ///TODO: Implement this
-            logger.info({
-                message: 'Updating user',
-                details: {
-                    patch: patch,
-                    requestCount: ++updateUserRequests
-                }
-            })
             yield this.connection.query(`UPDATE users SET email = ?, password = ? WHERE id = ?;`, [patch.email, patch.password, patch.id]);
         });
         // This is to delete the inserted order to avoid database data being contaminated also to make the data in database consistent with that in the json files so the comparison will return true.
         // Feel free to modify this based on your inserOrder implementation
         this.deleteOrder = (id) => __awaiter(this, void 0, void 0, function* () {
-            logger.info({
-                message: 'Deleting order',
-                details: {
-                    id: id,
-                    requestCount: ++deleteOrderRequests
-                }
-            })
             yield this.connection.query(`DELETE FROM order_items WHERE orderId = ?`, [
                 id,
             ]);
@@ -165,13 +94,6 @@ class MySqlDB {
     }
     queryProductById(productId) {
         return __awaiter(this, void 0, void 0, function* () {
-            logger.info({
-                message: 'Querying product by id',
-                details: {
-                    productId: productId,
-                    requestCount: ++queryProductByIdRequests
-                }
-            })
             return (yield this.connection.query(`SELECT *
                                 FROM products
                                 WHERE id = "${productId}";`))[0][0];
@@ -180,12 +102,6 @@ class MySqlDB {
     queryRandomProduct() {
         return __awaiter(this, void 0, void 0, function* () {
             ///TODO: Implement this
-            logger.info({
-                message: 'Querying random product',
-                details: {
-                    requestCount: ++queryRandomProductRequests
-                }
-            })
             return (yield this.connection.query("SELECT * FROM products ORDER BY RAND() LIMIT 1;"))[0][0];
         });
     }
@@ -193,13 +109,6 @@ class MySqlDB {
         return __awaiter(this, void 0, void 0, function* () {
             ///TODO: Implement this
             // return (await this.connection.query(""))[0] as Order[]; // Not a perfect analog for NoSQL, since SQL cannot return a list.
-            logger.info({
-                message: 'Querying orders by user',
-                details: {
-                    id: id,
-                    requestCount: ++queryOrdersByUserRequests
-                }
-            })
             return (yield this.connection.query(`SELECT *
                                 FROM orders
                                 WHERE userId = "${id}";`))[0];
