@@ -3,6 +3,7 @@ import { IDatabase } from "../interfaces";
 import { Category, Order, OrderItem, User, UserPatchRequest } from "../types";
 import { randomUUID } from "crypto";
 import mysql from "mysql2/promise";
+import logger from "../logger";
 
 export default class MySqlDB implements IDatabase {
   connection: mysql.Connection;
@@ -15,7 +16,7 @@ export default class MySqlDB implements IDatabase {
       port: parseInt(process.env.RDS_PORT), // Convert port to a number
       database: process.env.RDS_DATABASE,
     });
-    console.log("MySQL connected!");
+    logger.info("MySQL connected!");
   }
 
   constructor() {

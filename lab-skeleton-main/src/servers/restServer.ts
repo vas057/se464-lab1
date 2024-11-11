@@ -4,6 +4,7 @@ import cors from "cors";
 import morgan from "morgan";
 import bodyParser from "body-parser";
 import { AllProductsRequest, Order, OrderRequest, ProductRequest, UserPatchRequest, UserRequest } from "../types";
+import logger from "../logger";
 
 export default class RestServer implements IServer {
 
@@ -116,12 +117,14 @@ export default class RestServer implements IServer {
         await this.db.deleteOrder(id);
         res.status(204).send(); // No Content
       } catch (error) {
+        logger.info(`Error deleting order with id ${id}:`, error);
         console.error(`Error deleting order with id ${id}:`, error);
         res.status(500).send({ error: 'Failed to delete order' });
       }
     }); // Deletes an order by id
 
     this.server.listen(port, () => {
+      logger.info(`REST server listening on port ${port}`);
       console.log(`REST server listening on port ${port}`);
     });
   }
