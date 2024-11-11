@@ -21,10 +21,10 @@ order_items = generate_order_items(orders)
 
 # Populate DynamoDB Tables
 
-create_dynamo_tables()
-populate_dynamo_tables(users, categories, products, orders)
+# create_dynamo_tables()
+# populate_dynamo_tables(users, categories, products, orders)
 
 # Populate SQL Tables
 
-create_sql_tables()
-populate_sql_tables(users, categories, products, orders, order_items)
+# create_sql_tables()
+# populate_sql_tables(users, categories, products, orders, order_items)

@@ -22,13 +22,6 @@ export type Order = {
     totalAmount: number;
 };
 
-export type OrderItem = {
-    id: number;
-    orderId: string;
-    productId: string;
-    quantity: number;
-}
-
 export type OrderRequest = {
     id: string;
 }
@@ -41,6 +34,7 @@ export type OrderProduct = {
 export type Category = {
     description: string;
     id: string;
+    price: number;
     name: string;
 };
 
@@ -56,6 +50,31 @@ export type UserPatchRequest = {
 
 export type User = {
     id: string;
-    email: string;
     name: string;
+    email: string;
+}
+
+export type EndpointReturn = {
+    ok: boolean;
+    payload: any;
+}
+
+export type TestResult = {
+    ok: boolean;
+    time: number;
+    message?: string;
+}
+
+export type TestResults = {
+    randomProduct: TestResult;
+    userById: TestResult;
+    allProducts: TestResult;
+    productById: TestResult;
+    allCategories: TestResult;
+    allOrders: TestResult;
+    ordersByUser: TestResult;
+    orderById: TestResult;
+    allUsers: TestResult;
+    insertOrder: TestResult;
+    updateUser: TestResult;
 }
